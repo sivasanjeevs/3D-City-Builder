@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D City Builder</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            background: #2196F3;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            transition: background 0.3s;
+            width: 150px;
+            height: 40px;
+            font-size: 14px;
+            display: block;
+        }
+        button:hover {
+            background: #64B5F6;
+        }
+        button.active {
+            background: blueviolet;
+            border: 2px solid white;
+        }
+        #delete-btn {
+            background: #f44336;
+        }
+        #delete-btn:hover {
+            background: #ef5350;
+        }
+        #delete-btn.active {
+            background: #d32f2f;
+            border: 2px solid white;
+        }
+        select {
+            margin: 5px;
+            padding: 8px;
+            border-radius: 4px;
+            width: 150px;
+            height: 40px;
+            font-size: 14px;
+        }
+        #instructions {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h2>City Builder</h2>
+        <button id="build-house">Build House</button>
+        <button id="delete-btn">Delete</button>
+        <button id="build-skyscraper">Build Skyscraper</button>
+        <button id="build-road">Build Road</button>
+        <button id="build-tree">Build Tree</button>
+        <select id="floors-select">
+            <option value="5">5 Floors</option>
+            <option value="6">6 Floors</option>
+            <option value="7">7 Floors</option>
+            <option value="8">8 Floors</option>
+            <option value="9">9 Floors</option>
+            <option value="10">10 Floors</option>
+        </select>
+        <div id="instructions">
+            
+        </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html> 
