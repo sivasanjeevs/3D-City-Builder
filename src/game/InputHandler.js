@@ -99,12 +99,16 @@ export class InputHandler {
         const footpathMaterial = new THREE.MeshStandardMaterial({ color: 0xCCCCCC }); // Light gray color
         const leftFootpath = new THREE.Mesh(leftFootpathGeometry, footpathMaterial);
         leftFootpath.position.set(0, 0.05, -(footpathOffset + footpathWidth/2));
+        leftFootpath.castShadow = true;
+        leftFootpath.receiveShadow = true;
         markings.add(leftFootpath);
         
         // Right footpath
         const rightFootpathGeometry = new THREE.BoxGeometry(roadLength, footpathHeight, footpathWidth);
         const rightFootpath = new THREE.Mesh(rightFootpathGeometry, footpathMaterial);
         rightFootpath.position.set(0, 0.05, footpathOffset + footpathWidth/2);
+        rightFootpath.castShadow = true;
+        rightFootpath.receiveShadow = true;
         markings.add(rightFootpath);
         
         // Center line (dotted)
@@ -117,6 +121,8 @@ export class InputHandler {
                 0.1,
                 0
             );
+            dash.castShadow = true;
+            dash.receiveShadow = true;
             markings.add(dash);
         }
         
@@ -126,10 +132,14 @@ export class InputHandler {
         
         const leftLine = new THREE.Mesh(sideLineGeometry, sideLineMaterial);
         leftLine.position.set(0, 0.1, -0.9);
+        leftLine.castShadow = true;
+        leftLine.receiveShadow = true;
         markings.add(leftLine);
         
         const rightLine = new THREE.Mesh(sideLineGeometry, sideLineMaterial);
         rightLine.position.set(0, 0.1, 0.9);
+        rightLine.castShadow = true;
+        rightLine.receiveShadow = true;
         markings.add(rightLine);
 
         // Add street lights
@@ -144,6 +154,8 @@ export class InputHandler {
             const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
             const pole = new THREE.Mesh(poleGeometry, poleMaterial);
             pole.position.y = 2.5;
+            pole.castShadow = true;
+            pole.receiveShadow = true;
             lightGroup.add(pole);
             
             // Light head
@@ -155,6 +167,7 @@ export class InputHandler {
             });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 5;
+            head.castShadow = true;
             lightGroup.add(head);
             
             // Position the light alternating between left and right sides
@@ -165,15 +178,18 @@ export class InputHandler {
                 (1 + footpathWidth) * side
             );
             
-            // Add point light
+            // Add point light with shadow
             const pointLight = new THREE.PointLight(0xffffcc, 1, 10);
             pointLight.position.copy(head.position);
+            pointLight.castShadow = true;
+            pointLight.shadow.mapSize.width = 512;
+            pointLight.shadow.mapSize.height = 512;
             lightGroup.add(pointLight);
             
             markings.add(lightGroup);
         }
 
-        // Add cars on the road
+        // Add cars with shadows
         const carSpacing = 15;
         const numCars = Math.floor(roadLength / carSpacing);
         
@@ -185,6 +201,8 @@ export class InputHandler {
             const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 }); // Red car
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.25;
+            body.castShadow = true;
+            body.receiveShadow = true;
             carGroup.add(body);
             
             // Car windows
@@ -196,9 +214,10 @@ export class InputHandler {
             });
             const windows = new THREE.Mesh(windowGeometry, windowMaterial);
             windows.position.y = 0.5;
+            windows.castShadow = true;
             carGroup.add(windows);
             
-            // Wheels
+            // Wheels with shadows
             const wheelGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 16);
             const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
             
@@ -213,6 +232,8 @@ export class InputHandler {
                 const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
                 wheel.position.set(...pos);
                 wheel.rotation.x = Math.PI / 2;
+                wheel.castShadow = true;
+                wheel.receiveShadow = true;
                 carGroup.add(wheel);
             });
             
@@ -224,14 +245,12 @@ export class InputHandler {
                 lane
             );
             
-            // Add to scene and animate
             this.scene.add(carGroup);
             this.animateCar(carGroup, roadLength, lane);
-            
             markings.add(carGroup);
         }
 
-        // Add walking people on footpaths with strict positioning
+        // Add walking people with shadows
         const peopleSpacing = 4;
         const numPeople = Math.floor(roadLength / peopleSpacing) * 2;
         
@@ -243,6 +262,8 @@ export class InputHandler {
             const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.4;
+            body.castShadow = true;
+            body.receiveShadow = true;
             personGroup.add(body);
             
             // Person head
@@ -250,6 +271,8 @@ export class InputHandler {
             const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 0.9;
+            head.castShadow = true;
+            head.receiveShadow = true;
             personGroup.add(head);
             
             // Position the person on either the left or right footpath
@@ -264,7 +287,6 @@ export class InputHandler {
                 footpathZ
             );
             
-            // Store footpath constraints in userData
             personGroup.userData = {
                 footpathZ: footpathZ,
                 minX: -roadLength/2,
@@ -272,10 +294,8 @@ export class InputHandler {
                 side: side
             };
             
-            // Add to scene and animate
             this.scene.add(personGroup);
             this.animatePerson(personGroup, roadLength);
-            
             markings.add(personGroup);
         }
         
@@ -332,15 +352,17 @@ export class InputHandler {
     createTree(position) {
         const treeGroup = new THREE.Group();
         
-        // Tree trunk
+        // Tree trunk with shadow
         const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
         const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
         const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
         trunk.position.y = 1;
+        trunk.castShadow = true;
+        trunk.receiveShadow = true;
         treeGroup.add(trunk);
         
-        // Tree leaves (three layers)
-        const leafColors = [0x228B22, 0x2E8B57, 0x3CB371]; // Different shades of green
+        // Tree leaves with shadows
+        const leafColors = [0x228B22, 0x2E8B57, 0x3CB371];
         const leafSizes = [2, 1.5, 1];
         
         for (let i = 0; i < 3; i++) {
@@ -351,17 +373,15 @@ export class InputHandler {
             });
             const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
             leaves.position.y = 2 + i * 1.5;
+            leaves.castShadow = true;
+            leaves.receiveShadow = true;
             treeGroup.add(leaves);
         }
         
-        // Position the tree
         treeGroup.position.copy(position);
         treeGroup.position.y = 0;
-        
-        // Add slight random rotation
         treeGroup.rotation.y = Math.random() * Math.PI * 2;
         
-        // Add slight random scale variation
         const scale = 0.8 + Math.random() * 0.4;
         treeGroup.scale.set(scale, scale, scale);
         
