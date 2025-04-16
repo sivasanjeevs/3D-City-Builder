@@ -4,33 +4,69 @@ export class BuildingManager {
     constructor(scene) {
         this.scene = scene;
         this.buildingTypes = {
-            house: {
-                modern: this.createModernHouse,
-                classic: this.createClassicHouse,
-                futuristic: this.createFuturisticHouse
-            },
-            skyscraper: {
-                modern: this.createModernSkyscraper,
-                classic: this.createClassicSkyscraper,
-                futuristic: this.createFuturisticSkyscraper
-            },
-            tree: {
-                modern: this.createTree,
-                classic: this.createTree,
-                futuristic: this.createTree
-            }
+            house: this.createHouse,
+            skyscraper: this.createSkyscraper,
+            tree: this.createTree
         };
         this.placedBuildings = [];
+        this.houseColors = [
+            0xFFE4B5, // Light peach
+            0xFFB6C1, // Light pink
+            0xE0FFFF, // Light cyan
+            0xF0FFF0, // Honeydew
+            0xFFF0F5, // Lavender blush
+            0xF0F8FF, // Alice blue
+            0xFFFACD, // Lemon chiffon
+            0xE6E6FA, // Lavender
+            0xFFF5EE, // Seashell
+            0xF5F5F5, // White smoke
+            0xFFDAB9, // Peach puff
+            0xFFE4E1, // Misty rose
+            0xE6E6FA, // Lavender
+            0xFFF8DC, // Cornsilk
+            0xFAFAD2, // Light goldenrod
+            0xF0E68C, // Khaki
+            0xFFE4C4, // Bisque
+            0xFFDEAD, // Navajo white
+            0xF5DEB3, // Wheat
+            0xD2B48C  // Tan
+        ];
+        this.skyscraperColors = [
+            0xE6E6FA, // Lavender
+            0xE0FFFF, // Light cyan
+            0xF0F8FF, // Alice blue
+            0xFFF0F5, // Lavender blush
+            0xF0FFF0, // Honeydew
+            0xFFFACD, // Lemon chiffon
+            0xFFE4B5, // Light peach
+            0xFFB6C1, // Light pink
+            0xFFF5EE, // Seashell
+            0xF5F5F5, // White smoke
+            0x87CEEB, // Sky blue
+            0x98FB98, // Pale green
+            0xAFEEEE, // Pale turquoise
+            0xB0E0E6, // Powder blue
+            0xE0FFFF, // Light cyan
+            0xF0FFF0, // Honeydew
+            0xF5FFFA, // Mint cream
+            0xF0FFFF, // Azure
+            0xF0F8FF, // Alice blue
+            0xF8F8FF  // Ghost white
+        ];
     }
 
+    getRandomColor(colors) {
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
 
-    createModernHouse() {
+    createHouse() {
         const house = new THREE.Group();
+        const houseColor = this.getRandomColor(this.houseColors);
 
-        // Modern house body with clean lines
+        // House body with clean lines
         const bodyGeometry = new THREE.BoxGeometry(6, 4, 6);
         const bodyMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xE0E0E0,
+            color: houseColor,
             metalness: 0.2,
             roughness: 0.7
         });
@@ -40,7 +76,7 @@ export class BuildingManager {
         body.receiveShadow = true;
         house.add(body);
 
-        // Modern flat roof
+        // Flat roof
         const roofGeometry = new THREE.BoxGeometry(7, 0.5, 7);
         const roofMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x424242,
@@ -53,7 +89,7 @@ export class BuildingManager {
         roof.receiveShadow = true;
         house.add(roof);
 
-        // Add modern chimney
+        // Add chimney
         const chimneyGeometry = new THREE.BoxGeometry(0.8, 1.5, 0.8);
         const chimneyMaterial = new THREE.MeshStandardMaterial({
             color: 0x424242,
@@ -61,7 +97,7 @@ export class BuildingManager {
             roughness: 0.8
         });
         const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
-        chimney.position.set(2.5, 5, 2.5); // Position on the corner of the roof
+        chimney.position.set(2.5, 5, 2.5);
         chimney.castShadow = true;
         chimney.receiveShadow = true;
         house.add(chimney);
@@ -79,40 +115,84 @@ export class BuildingManager {
         cap.receiveShadow = true;
         house.add(cap);
 
-        // Large modern windows
-        const createModernWindow = (x, y, z) => {
+        // Windows
+        const createWindow = (x, y, z) => {
             const windowGroup = new THREE.Group();
             
-            // Window frame
-            const frameGeometry = new THREE.BoxGeometry(2, 2, 0.2);
-            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x2C3E50 });
+            // Main window frame - reduced size
+            const frameGeometry = new THREE.BoxGeometry(1.2, 1.2, 0.2);
+            const frameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2C3E50,
+                metalness: 0.6,
+                roughness: 0.3
+            });
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
             windowGroup.add(frame);
             
-            // Window glass
-            const glassGeometry = new THREE.BoxGeometry(1.8, 1.8, 0.1);
-            const glassMaterial = new THREE.MeshStandardMaterial({ 
+            // Window dividers (cross pattern) - adjusted for new size
+            const dividerGeometry = new THREE.BoxGeometry(0.1, 1.2, 0.2);
+            const dividerMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2C3E50,
+                metalness: 0.6,
+                roughness: 0.3
+            });
+            
+            // Vertical divider
+            const verticalDivider = new THREE.Mesh(dividerGeometry, dividerMaterial);
+            windowGroup.add(verticalDivider);
+            
+            // Horizontal divider
+            const horizontalDivider = new THREE.Mesh(dividerGeometry, dividerMaterial);
+            horizontalDivider.rotation.z = Math.PI / 2;
+            windowGroup.add(horizontalDivider);
+            
+            // Window panes (4 sections) - adjusted for new size
+            const paneGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.1);
+            const paneMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x87CEEB,
                 transparent: true,
                 opacity: 0.8,
                 metalness: 0.8,
                 roughness: 0.2
             });
-            const glass = new THREE.Mesh(glassGeometry, glassMaterial);
-            glass.position.z = 0.15;
-            windowGroup.add(glass);
+            
+            // Create 4 panes - adjusted positions for new size
+            const panePositions = [
+                [-0.3, 0.3, 0.15],
+                [0.3, 0.3, 0.15],
+                [-0.3, -0.3, 0.15],
+                [0.3, -0.3, 0.15]
+            ];
+            
+            panePositions.forEach(pos => {
+                const pane = new THREE.Mesh(paneGeometry, paneMaterial);
+                pane.position.set(...pos);
+                windowGroup.add(pane);
+            });
+            
+            // Window sill - adjusted for new size
+            const sillGeometry = new THREE.BoxGeometry(1.4, 0.1, 0.3);
+            const sillMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2C3E50,
+                metalness: 0.4,
+                roughness: 0.6
+            });
+            const sill = new THREE.Mesh(sillGeometry, sillMaterial);
+            sill.position.y = -0.65;
+            sill.position.z = 0.15;
+            windowGroup.add(sill);
             
             windowGroup.position.set(x, y, z);
             house.add(windowGroup);
         };
 
-        // Add windows
-        createModernWindow(-1.8, 2.5, 3.01);
-        createModernWindow(1.8, 2.5, 3.01);
-        createModernWindow(-1.8, 2.5, -3.01);
-        createModernWindow(1.8, 2.5, -3.01);
+        // Add windows - adjusted positions for new size
+        createWindow(-1.2, 2.5, 3.01);
+        createWindow(1.2, 2.5, 3.01);
+        createWindow(-1.2, 2.5, -3.01);
+        createWindow(1.2, 2.5, -3.01);
 
-        // Modern door
+        // Door
         const doorGeometry = new THREE.BoxGeometry(1.5, 2.5, 0.2);
         const doorMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x2C3E50,
@@ -126,351 +206,140 @@ export class BuildingManager {
         return house;
     }
 
-    createClassicHouse() {
-        const house = new THREE.Group();
-
-        // Classic house body with pitched roof
-        const bodyGeometry = new THREE.BoxGeometry(6, 4, 6);
+    createSkyscraper(floors = 5) {
+        const skyscraper = new THREE.Group();
+        const floorHeight = 4;
+        const width = 8;
+        const depth = 8;
+        const skyscraperColor = this.getRandomColor(this.skyscraperColors);
+        
+        // Main building body
+        const bodyGeometry = new THREE.BoxGeometry(width, floorHeight * floors, depth);
         const bodyMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x8B4513,
-            metalness: 0.1,
-            roughness: 0.9
+            color: skyscraperColor,
+            metalness: 0.3,
+            roughness: 0.7
         });
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = 2;
+        body.position.y = (floorHeight * floors) / 2;
         body.castShadow = true;
         body.receiveShadow = true;
-        house.add(body);
+        skyscraper.add(body);
 
-        // Classic pitched roof
-        const roofGeometry = new THREE.ConeGeometry(4.5, 2, 4);
-        const roofMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x8B0000,
-            metalness: 0.1,
-            roughness: 0.9
-        });
-        const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-        roof.position.y = 5;
-        roof.rotation.y = Math.PI / 4;
-        roof.castShadow = true;
-        roof.receiveShadow = true;
-        house.add(roof);
-
-        // Add classic brick chimney
-        const chimneyGeometry = new THREE.BoxGeometry(1, 2.5, 1);
-        const chimneyMaterial = new THREE.MeshStandardMaterial({
-            color: 0x8B4513,
-            metalness: 0.1,
-            roughness: 0.95
-        });
-        const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
-        chimney.position.set(2, 5, 2); // Position on the side of the roof
-        chimney.castShadow = true;
-        chimney.receiveShadow = true;
-        house.add(chimney);
-
-        // Chimney cap with brick detail
-        const capGeometry = new THREE.BoxGeometry(1.2, 0.3, 1.2);
-        const capMaterial = new THREE.MeshStandardMaterial({
-            color: 0x8B0000,
-            metalness: 0.1,
-            roughness: 0.9
-        });
-        const cap = new THREE.Mesh(capGeometry, capMaterial);
-        cap.position.set(2, 6.4, 2);
-        cap.castShadow = true;
-        cap.receiveShadow = true;
-        house.add(cap);
-
-        // Classic windows
-        const createClassicWindow = (x, y, z) => {
+        // Create window function for skyscraper
+        const createWindow = (x, y, z, rotationY = 0) => {
             const windowGroup = new THREE.Group();
             
-            // Window frame
-            const frameGeometry = new THREE.BoxGeometry(1.2, 1.5, 0.2);
-            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x2C3E50 });
+            // Main window frame - modern slim design
+            const frameGeometry = new THREE.BoxGeometry(0.8, 1.6, 0.1);
+            const frameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1A1A1A, // Dark gray for modern look
+                metalness: 0.8,
+                roughness: 0.2
+            });
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
             windowGroup.add(frame);
             
-            // Window panes
-            const paneGeometry = new THREE.BoxGeometry(1.1, 0.7, 0.1);
-            const paneMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x87CEEB,
-                transparent: true,
-                opacity: 0.8
-            });
-            
-            // Add two panes
-            const pane1 = new THREE.Mesh(paneGeometry, paneMaterial);
-            pane1.position.set(0, 0.2, 0.15);
-            windowGroup.add(pane1);
-            
-            const pane2 = new THREE.Mesh(paneGeometry, paneMaterial);
-            pane2.position.set(0, -0.2, 0.15);
-            windowGroup.add(pane2);
-            
-            windowGroup.position.set(x, y, z);
-            house.add(windowGroup);
-        };
-
-        // Add windows
-        createClassicWindow(-1.8, 2.5, 3.01);
-        createClassicWindow(1.8, 2.5, 3.01);
-        createClassicWindow(-1.8, 2.5, -3.01);
-        createClassicWindow(1.8, 2.5, -3.01);
-
-        // Classic door
-        const doorGeometry = new THREE.BoxGeometry(1.2, 2.2, 0.2);
-        const doorMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x4A235A,
-            metalness: 0.1,
-            roughness: 0.9
-        });
-        const door = new THREE.Mesh(doorGeometry, doorMaterial);
-        door.position.set(0, 1.1, 3.1);
-        house.add(door);
-
-        return house;
-    }
-
-    createFuturisticHouse() {
-        const house = new THREE.Group();
-
-        // Futuristic house body with geometric shapes
-        const bodyGeometry = new THREE.BoxGeometry(6, 4, 6);
-        const bodyMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xFFFFFF,
-            metalness: 0.8,
-            roughness: 0.2
-        });
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = 2;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        house.add(body);
-
-        // Futuristic roof with solar panels
-        const roofGeometry = new THREE.BoxGeometry(7, 0.3, 7);
-        const roofMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x1A1A1A,
-            metalness: 0.9,
-            roughness: 0.1
-        });
-        const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-        roof.position.y = 4.15;
-        roof.castShadow = true;
-        roof.receiveShadow = true;
-        house.add(roof);
-
-        // Solar panels
-        const solarPanelGeometry = new THREE.BoxGeometry(1, 0.1, 1);
-        const solarPanelMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x000000,
-            metalness: 0.9,
-            roughness: 0.1
-        });
-        
-        for (let i = -2; i <= 2; i += 1) {
-            for (let j = -2; j <= 2; j += 1) {
-                const solarPanel = new THREE.Mesh(solarPanelGeometry, solarPanelMaterial);
-                solarPanel.position.set(i, 4.3, j);
-                house.add(solarPanel);
-            }
-        }
-
-        // Futuristic windows
-        const createFuturisticWindow = (x, y, z) => {
-            const windowGroup = new THREE.Group();
-            
-            // Window frame
-            const frameGeometry = new THREE.BoxGeometry(2, 2, 0.2);
-            const frameMaterial = new THREE.MeshStandardMaterial({ 
+            // Modern window grid pattern
+            const gridMaterial = new THREE.MeshStandardMaterial({ 
                 color: 0x1A1A1A,
+                    metalness: 0.8,
+                    roughness: 0.2
+            });
+            
+            // Vertical grid lines
+            for (let i = -0.3; i <= 0.3; i += 0.3) {
+                const gridLineGeometry = new THREE.BoxGeometry(0.02, 1.6, 0.1);
+                const gridLine = new THREE.Mesh(gridLineGeometry, gridMaterial);
+                gridLine.position.x = i;
+                windowGroup.add(gridLine);
+            }
+            
+            // Horizontal grid lines
+            for (let i = -0.6; i <= 0.6; i += 0.4) {
+                const gridLineGeometry = new THREE.BoxGeometry(0.8, 0.02, 0.1);
+                const gridLine = new THREE.Mesh(gridLineGeometry, gridMaterial);
+                gridLine.position.y = i;
+                windowGroup.add(gridLine);
+            }
+            
+            // Modern glass panels
+            const glassGeometry = new THREE.BoxGeometry(0.2, 0.3, 0.05);
+                const glassMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x87CEEB,
+                    transparent: true,
+                opacity: 0.6,
                 metalness: 0.9,
                 roughness: 0.1
             });
-            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
-            windowGroup.add(frame);
             
-            // Window glass with futuristic pattern
-            const glassGeometry = new THREE.BoxGeometry(1.9, 1.9, 0.1);
-            const glassMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x00FFFF,
+            // Create glass panels in a grid pattern
+            const glassPositions = [
+                [-0.3, 0.6, 0.02], [0, 0.6, 0.02], [0.3, 0.6, 0.02],
+                [-0.3, 0.2, 0.02], [0, 0.2, 0.02], [0.3, 0.2, 0.02],
+                [-0.3, -0.2, 0.02], [0, -0.2, 0.02], [0.3, -0.2, 0.02],
+                [-0.3, -0.6, 0.02], [0, -0.6, 0.02], [0.3, -0.6, 0.02]
+            ];
+            
+            glassPositions.forEach(pos => {
+                const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+                glass.position.set(...pos);
+                windowGroup.add(glass);
+            });
+
+            // Modern window ledge
+            const ledgeGeometry = new THREE.BoxGeometry(0.9, 0.05, 0.2);
+            const ledgeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1A1A1A,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const ledge = new THREE.Mesh(ledgeGeometry, ledgeMaterial);
+            ledge.position.y = -0.85;
+            ledge.position.z = 0.05;
+            windowGroup.add(ledge);
+
+            // Add reflective highlights
+            const highlightGeometry = new THREE.BoxGeometry(0.8, 1.6, 0.01);
+            const highlightMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFFFFF,
                 transparent: true,
-                opacity: 0.7,
-                metalness: 0.9,
+                opacity: 0.2,
+                metalness: 1.0,
                 roughness: 0.1
             });
-            const glass = new THREE.Mesh(glassGeometry, glassMaterial);
-            glass.position.z = 0.15;
-            windowGroup.add(glass);
-            
-            windowGroup.position.set(x, y, z);
-            house.add(windowGroup);
-        };
-
-        // Add windows
-        createFuturisticWindow(-1.8, 2.5, 3.01);
-        createFuturisticWindow(1.8, 2.5, 3.01);
-        createFuturisticWindow(-1.8, 2.5, -3.01);
-        createFuturisticWindow(1.8, 2.5, -3.01);
-
-        // Futuristic door
-        const doorGeometry = new THREE.BoxGeometry(1.5, 2.5, 0.2);
-        const doorMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x1A1A1A,
-            metalness: 0.9,
-            roughness: 0.1
-        });
-        const door = new THREE.Mesh(doorGeometry, doorMaterial);
-        door.position.set(0, 1.25, 3.1);
-        house.add(door);
-
-        return house;
-    }
-
-    createModernSkyscraper(floors = 5) {
-        const skyscraper = new THREE.Group();
-        const floorHeight = 4;
-        const width = 8;
-        const depth = 8;
-        
-        // Expanded color palette for buildings
-        const buildingColors = [
-            0xE57373, // Light Red
-            0x81C784, // Light Green
-            0x64B5F6, // Light Blue
-            0xFFB74D, // Light Orange
-            0xBA68C8, // Light Purple
-            0x4DD0E1, // Light Cyan
-            0xF06292, // Pink
-            0xAED581, // Lime
-            0x4FC3F7, // Sky Blue
-            0xFFD54F  // Amber
-        ];
-        
-        const buildingColor = buildingColors[Math.floor(Math.random() * buildingColors.length)];
-        
-        // Main building body
-        const bodyGeometry = new THREE.BoxGeometry(width, floorHeight * floors, depth);
-        const bodyMaterial = new THREE.MeshStandardMaterial({ 
-            color: buildingColor,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = (floorHeight * floors) / 2;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        skyscraper.add(body);
-
-        // Create detailed window function
-        const createDetailedWindow = (x, y, z, rotationY = 0) => {
-            const windowGroup = new THREE.Group();
-            
-            // Outer frame - smaller size
-            const outerFrameGeometry = new THREE.BoxGeometry(0.8, 1.6, 0.2);
-            const frameMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x2C3E50,
-                metalness: 0.6,
-                roughness: 0.3
-            });
-            const outerFrame = new THREE.Mesh(outerFrameGeometry, frameMaterial);
-            windowGroup.add(outerFrame);
-
-            // Window divisions (horizontal bars)
-            const createBar = (y) => {
-                const barGeometry = new THREE.BoxGeometry(0.75, 0.08, 0.1);
-                const bar = new THREE.Mesh(barGeometry, frameMaterial);
-                bar.position.y = y;
-                bar.position.z = 0.05;
-                windowGroup.add(bar);
-            };
-            createBar(0); // Middle bar
-
-            // Window glass panels (2 panels)
-            const createGlassPanel = (y) => {
-                const glassGeometry = new THREE.BoxGeometry(0.7, 0.7, 0.05);
-                const glassMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x87CEEB,
-                    transparent: true,
-                    opacity: 0.7,
-                    metalness: 0.8,
-                    roughness: 0.2
-                });
-                const glass = new THREE.Mesh(glassGeometry, glassMaterial);
-                glass.position.y = y;
-                glass.position.z = 0.02;
-                windowGroup.add(glass);
-            };
-            createGlassPanel(0.4);  // Upper panel
-            createGlassPanel(-0.4); // Lower panel
-
-            // Window ledge - smaller
-            const ledgeGeometry = new THREE.BoxGeometry(0.9, 0.1, 0.3);
-            const ledgeMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x95A5A6,
-                metalness: 0.4,
-                roughness: 0.6
-            });
-            const ledge = new THREE.Mesh(ledgeGeometry, ledgeMaterial);
-            ledge.position.y = -0.85;
-            ledge.position.z = 0.15;
-            ledge.castShadow = true;
-            windowGroup.add(ledge);
-
-            // Decorative top piece - smaller
-            const topPieceGeometry = new THREE.BoxGeometry(0.85, 0.15, 0.2);
-            const topPiece = new THREE.Mesh(topPieceGeometry, ledgeMaterial);
-            topPiece.position.y = 0.85;
-            topPiece.position.z = 0.1;
-            topPiece.castShadow = true;
-            windowGroup.add(topPiece);
-
-            // Side columns - thinner
-            const createColumn = (x) => {
-                const columnGeometry = new THREE.BoxGeometry(0.1, 1.8, 0.2);
-                const column = new THREE.Mesh(columnGeometry, frameMaterial);
-                column.position.set(x, 0, 0.1);
-                column.castShadow = true;
-                windowGroup.add(column);
-            };
-            createColumn(-0.4);  // Left column
-            createColumn(0.4);   // Right column
+            const highlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+            highlight.position.z = 0.05;
+            windowGroup.add(highlight);
 
             windowGroup.position.set(x, y, z);
             windowGroup.rotation.y = rotationY;
             return windowGroup;
         };
 
-        // Add detailed windows to each floor with smaller spacing
-        const windowSpacing = 1.2; // Reduced spacing between windows
+        // Add windows to each floor
+        const windowSpacing = 1.2;
         for (let floor = 0; floor < floors; floor++) {
             const floorY = floor * floorHeight + 2;
             
-            // Front windows - more windows per floor
+            // Front windows
             for (let x = -3; x <= 3; x += windowSpacing) {
-                const frontWindow = createDetailedWindow(x, floorY, depth/2 + 0.01);
-                skyscraper.add(frontWindow);
+                skyscraper.add(createWindow(x, floorY, depth/2 + 0.01));
             }
             
-            // Back windows - more windows per floor
+            // Back windows
             for (let x = -3; x <= 3; x += windowSpacing) {
-                const backWindow = createDetailedWindow(x, floorY, -depth/2 - 0.01, Math.PI);
-                skyscraper.add(backWindow);
+                skyscraper.add(createWindow(x, floorY, -depth/2 - 0.01, Math.PI));
             }
             
-            // Side windows - more windows per floor
+            // Side windows
             for (let z = -3; z <= 3; z += windowSpacing) {
-                const leftWindow = createDetailedWindow(-width/2 - 0.01, floorY, z, -Math.PI/2);
-                skyscraper.add(leftWindow);
-                
-                const rightWindow = createDetailedWindow(width/2 + 0.01, floorY, z, Math.PI/2);
-                skyscraper.add(rightWindow);
+                skyscraper.add(createWindow(-width/2 - 0.01, floorY, z, -Math.PI/2));
+                skyscraper.add(createWindow(width/2 + 0.01, floorY, z, Math.PI/2));
             }
         }
 
-        // Simple roof
+        // Roof
         const roofGeometry = new THREE.BoxGeometry(width + 0.2, 0.5, depth + 0.2);
         const roofMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x424242,
@@ -482,359 +351,6 @@ export class BuildingManager {
         roof.castShadow = true;
         roof.receiveShadow = true;
         skyscraper.add(roof);
-
-        // Simple rooftop structure
-        const rooftopGeometry = new THREE.BoxGeometry(width/2, 2, depth/2);
-        const rooftopMaterial = new THREE.MeshStandardMaterial({ 
-            color: buildingColor,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const rooftop = new THREE.Mesh(rooftopGeometry, rooftopMaterial);
-        rooftop.position.y = floorHeight * floors + 1.5;
-        rooftop.castShadow = true;
-        rooftop.receiveShadow = true;
-        skyscraper.add(rooftop);
-
-        return skyscraper;
-    }
-
-    createClassicSkyscraper(floors = 5) {
-        const skyscraper = new THREE.Group();
-        const floorHeight = 4;
-        const width = 8;
-        const depth = 8;
-        
-        // Expanded color palette for buildings
-        const buildingColors = [
-            0xE57373, // Light Red
-            0x81C784, // Light Green
-            0x64B5F6, // Light Blue
-            0xFFB74D, // Light Orange
-            0xBA68C8, // Light Purple
-            0x4DD0E1, // Light Cyan
-            0xF06292, // Pink
-            0xAED581, // Lime
-            0x4FC3F7, // Sky Blue
-            0xFFD54F  // Amber
-        ];
-        
-        const buildingColor = buildingColors[Math.floor(Math.random() * buildingColors.length)];
-        
-        // Main building body
-        const bodyGeometry = new THREE.BoxGeometry(width, floorHeight * floors, depth);
-        const bodyMaterial = new THREE.MeshStandardMaterial({ 
-            color: buildingColor,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = (floorHeight * floors) / 2;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        skyscraper.add(body);
-
-        // Create detailed window function
-        const createDetailedWindow = (x, y, z, rotationY = 0) => {
-            const windowGroup = new THREE.Group();
-            
-            // Outer frame - smaller size
-            const outerFrameGeometry = new THREE.BoxGeometry(0.8, 1.6, 0.2);
-            const frameMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x2C3E50,
-                metalness: 0.6,
-                roughness: 0.3
-            });
-            const outerFrame = new THREE.Mesh(outerFrameGeometry, frameMaterial);
-            windowGroup.add(outerFrame);
-
-            // Window divisions (horizontal bars)
-            const createBar = (y) => {
-                const barGeometry = new THREE.BoxGeometry(0.75, 0.08, 0.1);
-                const bar = new THREE.Mesh(barGeometry, frameMaterial);
-                bar.position.y = y;
-                bar.position.z = 0.05;
-                windowGroup.add(bar);
-            };
-            createBar(0); // Middle bar
-
-            // Window glass panels (2 panels)
-            const createGlassPanel = (y) => {
-                const glassGeometry = new THREE.BoxGeometry(0.7, 0.7, 0.05);
-                const glassMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x87CEEB,
-                    transparent: true,
-                    opacity: 0.7,
-                    metalness: 0.8,
-                    roughness: 0.2
-                });
-                const glass = new THREE.Mesh(glassGeometry, glassMaterial);
-                glass.position.y = y;
-                glass.position.z = 0.02;
-                windowGroup.add(glass);
-            };
-            createGlassPanel(0.4);  // Upper panel
-            createGlassPanel(-0.4); // Lower panel
-
-            // Window ledge - smaller
-            const ledgeGeometry = new THREE.BoxGeometry(0.9, 0.1, 0.3);
-            const ledgeMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x95A5A6,
-                metalness: 0.4,
-                roughness: 0.6
-            });
-            const ledge = new THREE.Mesh(ledgeGeometry, ledgeMaterial);
-            ledge.position.y = -0.85;
-            ledge.position.z = 0.15;
-            ledge.castShadow = true;
-            windowGroup.add(ledge);
-
-            // Decorative top piece - smaller
-            const topPieceGeometry = new THREE.BoxGeometry(0.85, 0.15, 0.2);
-            const topPiece = new THREE.Mesh(topPieceGeometry, ledgeMaterial);
-            topPiece.position.y = 0.85;
-            topPiece.position.z = 0.1;
-            topPiece.castShadow = true;
-            windowGroup.add(topPiece);
-
-            // Side columns - thinner
-            const createColumn = (x) => {
-                const columnGeometry = new THREE.BoxGeometry(0.1, 1.8, 0.2);
-                const column = new THREE.Mesh(columnGeometry, frameMaterial);
-                column.position.set(x, 0, 0.1);
-                column.castShadow = true;
-                windowGroup.add(column);
-            };
-            createColumn(-0.4);  // Left column
-            createColumn(0.4);   // Right column
-
-            windowGroup.position.set(x, y, z);
-            windowGroup.rotation.y = rotationY;
-            return windowGroup;
-        };
-
-        // Add detailed windows to each floor with smaller spacing
-        const windowSpacing = 1.2; // Reduced spacing between windows
-        for (let floor = 0; floor < floors; floor++) {
-            const floorY = floor * floorHeight + 2;
-            
-            // Front windows - more windows per floor
-            for (let x = -3; x <= 3; x += windowSpacing) {
-                const frontWindow = createDetailedWindow(x, floorY, depth/2 + 0.01);
-                skyscraper.add(frontWindow);
-            }
-            
-            // Back windows - more windows per floor
-            for (let x = -3; x <= 3; x += windowSpacing) {
-                const backWindow = createDetailedWindow(x, floorY, -depth/2 - 0.01, Math.PI);
-                skyscraper.add(backWindow);
-            }
-            
-            // Side windows - more windows per floor
-            for (let z = -3; z <= 3; z += windowSpacing) {
-                const leftWindow = createDetailedWindow(-width/2 - 0.01, floorY, z, -Math.PI/2);
-                skyscraper.add(leftWindow);
-                
-                const rightWindow = createDetailedWindow(width/2 + 0.01, floorY, z, Math.PI/2);
-                skyscraper.add(rightWindow);
-            }
-        }
-
-        // Simple roof
-        const roofGeometry = new THREE.BoxGeometry(width + 0.2, 0.5, depth + 0.2);
-        const roofMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x424242,
-            metalness: 0.5,
-            roughness: 0.5
-        });
-        const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-        roof.position.y = floorHeight * floors + 0.25;
-        roof.castShadow = true;
-        roof.receiveShadow = true;
-        skyscraper.add(roof);
-
-        // Simple rooftop structure
-        const rooftopGeometry = new THREE.BoxGeometry(width/2, 2, depth/2);
-        const rooftopMaterial = new THREE.MeshStandardMaterial({ 
-            color: buildingColor,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const rooftop = new THREE.Mesh(rooftopGeometry, rooftopMaterial);
-        rooftop.position.y = floorHeight * floors + 1.5;
-        rooftop.castShadow = true;
-        rooftop.receiveShadow = true;
-        skyscraper.add(rooftop);
-
-        return skyscraper;
-    }
-
-    createFuturisticSkyscraper(floors = 5) {
-        const skyscraper = new THREE.Group();
-        const floorHeight = 4;
-        const width = 8;
-        const depth = 8;
-        
-        // Expanded color palette for buildings
-        const buildingColors = [
-            0xE57373, // Light Red
-            0x81C784, // Light Green
-            0x64B5F6, // Light Blue
-            0xFFB74D, // Light Orange
-            0xBA68C8, // Light Purple
-            0x4DD0E1, // Light Cyan
-            0xF06292, // Pink
-            0xAED581, // Lime
-            0x4FC3F7, // Sky Blue
-            0xFFD54F  // Amber
-        ];
-        
-        const buildingColor = buildingColors[Math.floor(Math.random() * buildingColors.length)];
-        
-        // Main building body
-        const bodyGeometry = new THREE.BoxGeometry(width, floorHeight * floors, depth);
-        const bodyMaterial = new THREE.MeshStandardMaterial({ 
-            color: buildingColor,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = (floorHeight * floors) / 2;
-        body.castShadow = true;
-        body.receiveShadow = true;
-        skyscraper.add(body);
-
-        // Create detailed window function
-        const createDetailedWindow = (x, y, z, rotationY = 0) => {
-            const windowGroup = new THREE.Group();
-            
-            // Outer frame - smaller size
-            const outerFrameGeometry = new THREE.BoxGeometry(0.8, 1.6, 0.2);
-            const frameMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x2C3E50,
-                metalness: 0.6,
-                roughness: 0.3
-            });
-            const outerFrame = new THREE.Mesh(outerFrameGeometry, frameMaterial);
-            windowGroup.add(outerFrame);
-
-            // Window divisions (horizontal bars)
-            const createBar = (y) => {
-                const barGeometry = new THREE.BoxGeometry(0.75, 0.08, 0.1);
-                const bar = new THREE.Mesh(barGeometry, frameMaterial);
-                bar.position.y = y;
-                bar.position.z = 0.05;
-                windowGroup.add(bar);
-            };
-            createBar(0); // Middle bar
-
-            // Window glass panels (2 panels)
-            const createGlassPanel = (y) => {
-                const glassGeometry = new THREE.BoxGeometry(0.7, 0.7, 0.05);
-                const glassMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x87CEEB,
-                    transparent: true,
-                    opacity: 0.7,
-                    metalness: 0.8,
-                    roughness: 0.2
-                });
-                const glass = new THREE.Mesh(glassGeometry, glassMaterial);
-                glass.position.y = y;
-                glass.position.z = 0.02;
-                windowGroup.add(glass);
-            };
-            createGlassPanel(0.4);  // Upper panel
-            createGlassPanel(-0.4); // Lower panel
-
-            // Window ledge - smaller
-            const ledgeGeometry = new THREE.BoxGeometry(0.9, 0.1, 0.3);
-            const ledgeMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x95A5A6,
-                metalness: 0.4,
-                roughness: 0.6
-            });
-            const ledge = new THREE.Mesh(ledgeGeometry, ledgeMaterial);
-            ledge.position.y = -0.85;
-            ledge.position.z = 0.15;
-            ledge.castShadow = true;
-            windowGroup.add(ledge);
-
-            // Decorative top piece - smaller
-            const topPieceGeometry = new THREE.BoxGeometry(0.85, 0.15, 0.2);
-            const topPiece = new THREE.Mesh(topPieceGeometry, ledgeMaterial);
-            topPiece.position.y = 0.85;
-            topPiece.position.z = 0.1;
-            topPiece.castShadow = true;
-            windowGroup.add(topPiece);
-
-            // Side columns - thinner
-            const createColumn = (x) => {
-                const columnGeometry = new THREE.BoxGeometry(0.1, 1.8, 0.2);
-                const column = new THREE.Mesh(columnGeometry, frameMaterial);
-                column.position.set(x, 0, 0.1);
-                column.castShadow = true;
-                windowGroup.add(column);
-            };
-            createColumn(-0.4);  // Left column
-            createColumn(0.4);   // Right column
-
-            windowGroup.position.set(x, y, z);
-            windowGroup.rotation.y = rotationY;
-            return windowGroup;
-        };
-
-        // Add detailed windows to each floor with smaller spacing
-        const windowSpacing = 1.2; // Reduced spacing between windows
-        for (let floor = 0; floor < floors; floor++) {
-            const floorY = floor * floorHeight + 2;
-            
-            // Front windows - more windows per floor
-            for (let x = -3; x <= 3; x += windowSpacing) {
-                const frontWindow = createDetailedWindow(x, floorY, depth/2 + 0.01);
-                skyscraper.add(frontWindow);
-            }
-            
-            // Back windows - more windows per floor
-            for (let x = -3; x <= 3; x += windowSpacing) {
-                const backWindow = createDetailedWindow(x, floorY, -depth/2 - 0.01, Math.PI);
-                skyscraper.add(backWindow);
-            }
-            
-            // Side windows - more windows per floor
-            for (let z = -3; z <= 3; z += windowSpacing) {
-                const leftWindow = createDetailedWindow(-width/2 - 0.01, floorY, z, -Math.PI/2);
-                skyscraper.add(leftWindow);
-                
-                const rightWindow = createDetailedWindow(width/2 + 0.01, floorY, z, Math.PI/2);
-                skyscraper.add(rightWindow);
-            }
-        }
-
-        // Simple roof
-        const roofGeometry = new THREE.BoxGeometry(width + 0.2, 0.5, depth + 0.2);
-        const roofMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x424242,
-            metalness: 0.5,
-            roughness: 0.5
-        });
-        const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-        roof.position.y = floorHeight * floors + 0.25;
-        roof.castShadow = true;
-        roof.receiveShadow = true;
-        skyscraper.add(roof);
-
-        // Simple rooftop structure
-        const rooftopGeometry = new THREE.BoxGeometry(width/2, 2, depth/2);
-        const rooftopMaterial = new THREE.MeshStandardMaterial({ 
-            color: buildingColor,
-            metalness: 0.3,
-            roughness: 0.7
-        });
-        const rooftop = new THREE.Mesh(rooftopGeometry, rooftopMaterial);
-        rooftop.position.y = floorHeight * floors + 1.5;
-        rooftop.castShadow = true;
-        rooftop.receiveShadow = true;
-        skyscraper.add(rooftop);
 
         return skyscraper;
     }
@@ -842,7 +358,7 @@ export class BuildingManager {
     createTree() {
         const tree = new THREE.Group();
 
-        // Create tree trunk
+        // Tree trunk
         const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
         const trunkMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x8B4513,
@@ -855,7 +371,7 @@ export class BuildingManager {
         trunk.receiveShadow = true;
         tree.add(trunk);
 
-        // Create tree leaves with multiple layers
+        // Tree leaves with multiple layers
         const leafColors = [0x228B22, 0x2E8B57, 0x3CB371];
         const leafSizes = [2, 1.5, 1];
         
@@ -881,17 +397,15 @@ export class BuildingManager {
     }
 
     createBuilding(type, style = 'modern', options = {}) {
-        if (!this.buildingTypes[type] || !this.buildingTypes[type][style]) {
-            console.error(`Invalid building type or style: ${type}, ${style}`);
+        if (!this.buildingTypes[type]) {
+            console.error(`Invalid building type: ${type}`);
             return null;
         }
 
-        const building = this.buildingTypes[type][style](options.floors);
+        const building = this.buildingTypes[type].call(this, options.floors);
         
-        // Add basic user data
         building.userData = {
             type: type,
-            style: style,
             floors: options.floors || 1
         };
 
@@ -899,18 +413,13 @@ export class BuildingManager {
     }
 
     placeBuilding(x, z, building) {
-        // Directly position the building without any constraints
         building.position.set(x, 0, z);
-        
-        // Add to scene and tracking
         this.scene.add(building);
         this.placedBuildings.push(building);
-        
         return true;
     }
 
     removeBuilding(x, z) {
-        // Find building at exact position (or nearby)
         const building = this.placedBuildings.find(b => 
             Math.abs(b.position.x - x) < 0.1 && 
             Math.abs(b.position.z - z) < 0.1
