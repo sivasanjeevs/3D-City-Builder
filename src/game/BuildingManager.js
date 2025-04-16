@@ -13,10 +13,16 @@ export class BuildingManager {
                 modern: this.createModernSkyscraper,
                 classic: this.createClassicSkyscraper,
                 futuristic: this.createFuturisticSkyscraper
+            },
+            tree: {
+                modern: this.createTree,
+                classic: this.createTree,
+                futuristic: this.createTree
             }
         };
-        this.placedBuildings = []; // Track all placed buildings
+        this.placedBuildings = [];
     }
+
 
     createModernHouse() {
         const house = new THREE.Group();
@@ -779,6 +785,47 @@ export class BuildingManager {
         skyscraper.add(rooftop);
 
         return skyscraper;
+    }
+
+    createTree() {
+        const tree = new THREE.Group();
+
+        // Create tree trunk
+        const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
+        const trunkMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8B4513,
+            metalness: 0.1,
+            roughness: 0.9
+        });
+        const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+        trunk.position.y = 1;
+        trunk.castShadow = true;
+        trunk.receiveShadow = true;
+        tree.add(trunk);
+
+        // Create tree leaves with multiple layers
+        const leafColors = [0x228B22, 0x2E8B57, 0x3CB371];
+        const leafSizes = [2, 1.5, 1];
+        
+        for (let i = 0; i < 3; i++) {
+            const leafGeometry = new THREE.ConeGeometry(leafSizes[i], 2, 8);
+            const leafMaterial = new THREE.MeshStandardMaterial({ 
+                color: leafColors[i],
+                flatShading: true
+            });
+            const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
+            leaves.position.y = 2 + i * 1.5;
+            leaves.castShadow = true;
+            leaves.receiveShadow = true;
+            tree.add(leaves);
+        }
+
+        // Random rotation and slight scale variation
+        tree.rotation.y = Math.random() * Math.PI * 2;
+        const scale = 0.8 + Math.random() * 0.4;
+        tree.scale.set(scale, scale, scale);
+
+        return tree;
     }
 
     createBuilding(type, style = 'modern', options = {}) {

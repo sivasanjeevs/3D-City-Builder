@@ -377,50 +377,43 @@ export class InputHandler {
     }
 
     createTree(position) {
-        const treeGroup = new THREE.Group();
-        
-        // Tree trunk with shadow
+        const tree = new THREE.Group();
+
+        // Create tree trunk
         const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
         const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
         const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-        trunk.position.y = 1;
+        trunk.position.y = 1; // Position the trunk above the ground
         trunk.castShadow = true;
         trunk.receiveShadow = true;
-        treeGroup.add(trunk);
-        
-        // Tree leaves with shadows
-        const leafColors = [0x228B22, 0x2E8B57, 0x3CB371];
-        const leafSizes = [2, 1.5, 1];
-        
-        for (let i = 0; i < 3; i++) {
-            const leafGeometry = new THREE.ConeGeometry(leafSizes[i], 2, 8);
-            const leafMaterial = new THREE.MeshStandardMaterial({ 
-                color: leafColors[i],
-                flatShading: true
-            });
-            const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
-            leaves.position.y = 2 + i * 1.5;
-            leaves.castShadow = true;
-            leaves.receiveShadow = true;
-            treeGroup.add(leaves);
-        }
-        
-        treeGroup.position.copy(position);
-        treeGroup.position.y = 0;
-        treeGroup.rotation.y = Math.random() * Math.PI * 2;
+        tree.add(trunk);
+
+        // Create tree leaves
+        const leafGeometry = new THREE.ConeGeometry(1, 2, 8);
+        const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+        const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
+        leaves.position.y = 3; // Position leaves above the trunk
+        leaves.castShadow = true;
+        leaves.receiveShadow = true;
+        tree.add(leaves);
+
+        tree.position.copy(position);
+        tree.position.y = 0;
+        tree.rotation.y = Math.random() * Math.PI * 2;
         
         const scale = 0.8 + Math.random() * 0.4;
-        treeGroup.scale.set(scale, scale, scale);
+        tree.scale.set(scale, scale, scale);
         
-        this.scene.add(treeGroup);
-        this.buildings.push(treeGroup);
+        this.scene.add(tree);
+        this.buildings.push(tree);
         
-        return treeGroup;
+        return tree;
     }
+
     onMouseDown(event) {
         // Check if the click was on a button
         if (event.target.tagName === 'BUTTON' || event.target.tagName === 'SELECT') {
-            return;
+            return; // Don't process the click if it was on a button
         }
 
         if (this.isDeleteMode) {
@@ -469,6 +462,8 @@ export class InputHandler {
         if (intersects.length > 0) {
             const point = intersects[0].point;
             
+            console.log(`Selected Building Type: ${this.selectedBuildingType}`);
+            
             if (this.selectedBuildingType === BuildingTypes.HOUSE) {
                 const building = this.buildingManager.createBuilding('house', this.selectedBuildingStyle);
                 if (building) {
@@ -486,6 +481,9 @@ export class InputHandler {
                 if (building) {
                     this.cityBuilder.placeBuilding(point.x, point.z, building);
                     this.buildings.push(building);
+                    console.log(`Tree placed at: x=${point.x}, z=${point.z}`); // Debug log
+                } else {
+                    console.error("Failed to create tree."); // Error log
                 }
             } else if (this.selectedBuildingType === BuildingTypes.ROAD) {
                 this.startPoint = point;
@@ -493,7 +491,6 @@ export class InputHandler {
             }
         }
     }
-
 
     onMouseMove(event) {
         if (!this.isDrawing || !this.startPoint) return;
@@ -696,5 +693,15 @@ export class InputHandler {
         if (event.key === 'Delete' || event.key === 'Backspace') {
             this.toggleDeleteMode();
         }
+    }
+
+    setupLights() {
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Adjust intensity
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Adjust intensity
+        directionalLight.position.set(50, 50, 0);
+        directionalLight.castShadow = true;
+        this.scene.add(directionalLight);
     }
 } 
