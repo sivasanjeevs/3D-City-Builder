@@ -1,16 +1,33 @@
 import * as THREE from 'three';
+import { CityBuilder } from './CityBuilder';
+
+// Building type definitions
+const BuildingTypes = {
+    HOUSE: 'house',
+    SKYSCRAPER: 'skyscraper',
+    ROAD: 'road',
+    TREE: 'tree'
+};
+
+const BuildingStyles = {
+    MODERN: 'modern',
+    CLASSIC: 'classic',
+    FUTURISTIC: 'futuristic'
+};
 
 export class InputHandler {
     constructor(camera, scene, buildingManager) {
         this.camera = camera;
         this.scene = scene;
         this.buildingManager = buildingManager;
+        this.cityBuilder = new CityBuilder(scene);
         this.isDrawing = false;
         this.startPoint = null;
         this.currentRoad = null;
         this.roads = [];
         this.buildings = [];
-        this.selectedBuildingType = 'house';
+        this.selectedBuildingType = BuildingTypes.HOUSE;
+        this.selectedBuildingStyle = BuildingStyles.MODERN;
         this.selectedFloors = 5;
         this.isDeleteMode = false;
         this.raycaster = new THREE.Raycaster();
@@ -24,61 +41,71 @@ export class InputHandler {
         window.addEventListener('mouseup', () => this.onMouseUp());
         window.addEventListener('keydown', (event) => this.onKeyDown(event));
 
+        // Building type selection
         document.getElementById('build-house').addEventListener('click', () => {
-            this.selectedBuildingType = 'house';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.add('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.remove('active');
+            this.setBuildingType(BuildingTypes.HOUSE);
         });
         
         document.getElementById('build-road').addEventListener('click', () => {
-            this.selectedBuildingType = 'road';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.add('active');
-            document.getElementById('build-tree').classList.remove('active');
+            this.setBuildingType(BuildingTypes.ROAD);
         });
 
         document.getElementById('build-skyscraper').addEventListener('click', () => {
-            this.selectedBuildingType = 'skyscraper';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.add('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.remove('active');
+            this.setBuildingType(BuildingTypes.SKYSCRAPER);
         });
 
         document.getElementById('build-tree').addEventListener('click', () => {
-            this.selectedBuildingType = 'tree';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.add('active');
+            this.setBuildingType(BuildingTypes.TREE);
         });
 
         document.getElementById('delete-btn').addEventListener('click', () => {
-            this.isDeleteMode = !this.isDeleteMode;
-            document.getElementById('delete-btn').classList.toggle('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.remove('active');
-            if (this.isDeleteMode) {
-                this.selectedBuildingType = null;
-            }
+            this.toggleDeleteMode();
         });
 
         document.getElementById('floors-select').addEventListener('change', (event) => {
             this.selectedFloors = parseInt(event.target.value);
         });
+
+        // Building style selection
+        document.getElementById('building-style').addEventListener('change', (event) => {
+            this.setBuildingStyle(event.target.value);
+        });
+    }
+
+    setBuildingType(type) {
+        this.selectedBuildingType = type;
+        this.isDeleteMode = false;
+        
+        // Update UI
+        document.getElementById('delete-btn').classList.remove('active');
+        document.getElementById('build-house').classList.remove('active');
+        document.getElementById('build-skyscraper').classList.remove('active');
+        document.getElementById('build-road').classList.remove('active');
+        document.getElementById('build-tree').classList.remove('active');
+        
+        // Activate the selected button
+        document.getElementById(`build-${type}`).classList.add('active');
+    }
+
+    setBuildingStyle(style) {
+        if (Object.values(BuildingStyles).includes(style)) {
+            this.selectedBuildingStyle = style;
+        }
+    }
+
+    toggleDeleteMode() {
+        this.isDeleteMode = !this.isDeleteMode;
+        document.getElementById('delete-btn').classList.toggle('active');
+        
+        // Deactivate all building type buttons
+        document.getElementById('build-house').classList.remove('active');
+        document.getElementById('build-skyscraper').classList.remove('active');
+        document.getElementById('build-road').classList.remove('active');
+        document.getElementById('build-tree').classList.remove('active');
+        
+        if (this.isDeleteMode) {
+            this.selectedBuildingType = null;
+        }
     }
 
     createRoadMarkings(road) {
@@ -350,45 +377,37 @@ export class InputHandler {
     }
 
     createTree(position) {
-        const treeGroup = new THREE.Group();
-        
-        // Tree trunk with shadow
+        const tree = new THREE.Group();
+
+        // Create tree trunk
         const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 2, 8);
         const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
         const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-        trunk.position.y = 1;
+        trunk.position.y = 1; // Position the trunk above the ground
         trunk.castShadow = true;
         trunk.receiveShadow = true;
-        treeGroup.add(trunk);
-        
-        // Tree leaves with shadows
-        const leafColors = [0x228B22, 0x2E8B57, 0x3CB371];
-        const leafSizes = [2, 1.5, 1];
-        
-        for (let i = 0; i < 3; i++) {
-            const leafGeometry = new THREE.ConeGeometry(leafSizes[i], 2, 8);
-            const leafMaterial = new THREE.MeshStandardMaterial({ 
-                color: leafColors[i],
-                flatShading: true
-            });
-            const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
-            leaves.position.y = 2 + i * 1.5;
-            leaves.castShadow = true;
-            leaves.receiveShadow = true;
-            treeGroup.add(leaves);
-        }
-        
-        treeGroup.position.copy(position);
-        treeGroup.position.y = 0;
-        treeGroup.rotation.y = Math.random() * Math.PI * 2;
+        tree.add(trunk);
+
+        // Create tree leaves
+        const leafGeometry = new THREE.ConeGeometry(1, 2, 8);
+        const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+        const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
+        leaves.position.y = 3; // Position leaves above the trunk
+        leaves.castShadow = true;
+        leaves.receiveShadow = true;
+        tree.add(leaves);
+
+        tree.position.copy(position);
+        tree.position.y = 0;
+        tree.rotation.y = Math.random() * Math.PI * 2;
         
         const scale = 0.8 + Math.random() * 0.4;
-        treeGroup.scale.set(scale, scale, scale);
+        tree.scale.set(scale, scale, scale);
         
-        this.scene.add(treeGroup);
-        this.buildings.push(treeGroup);
+        this.scene.add(tree);
+        this.buildings.push(tree);
         
-        return treeGroup;
+        return tree;
     }
 
     onMouseDown(event) {
@@ -417,11 +436,32 @@ export class InputHandler {
                     objectToDelete = objectToDelete.parent;
                 }
                 
+<<<<<<< HEAD
                 this.scene.remove(objectToDelete);
                 
                 const buildingIndex = this.buildings.indexOf(objectToDelete);
                 if (buildingIndex !== -1) {
                     this.buildings.splice(buildingIndex, 1);
+=======
+                // Check if the object is the ground plane
+                if (objectToDelete.userData.isGround) {
+                    return;
+                }
+                
+                if (objectToDelete !== this.scene.children[0]) {
+                    this.scene.remove(objectToDelete);
+                    
+                    // Remove from buildings or roads arrays
+                    const buildingIndex = this.buildings.indexOf(objectToDelete);
+                    if (buildingIndex !== -1) {
+                        this.buildings.splice(buildingIndex, 1);
+                    }
+                    
+                    const roadIndex = this.roads.indexOf(objectToDelete);
+                    if (roadIndex !== -1) {
+                        this.roads.splice(roadIndex, 1);
+                    }
+>>>>>>> 5fd1c2625dd77c49ced3287b698ffa4b201c8e52
                 }
                 
                 const roadIndex = this.roads.indexOf(objectToDelete);
@@ -431,25 +471,45 @@ export class InputHandler {
                 return;
             }
 
+<<<<<<< HEAD
             if (this.selectedBuildingType === 'house') {
                 const point = intersects[0].point;
                 const building = this.buildingManager.createBuilding('house');
+=======
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children);
+        
+        if (intersects.length > 0) {
+            const point = intersects[0].point;
+            
+            console.log(`Selected Building Type: ${this.selectedBuildingType}`);
+            
+            if (this.selectedBuildingType === BuildingTypes.HOUSE) {
+                const building = this.buildingManager.createBuilding('house', this.selectedBuildingStyle);
+>>>>>>> 5fd1c2625dd77c49ced3287b698ffa4b201c8e52
                 if (building) {
-                    building.position.set(point.x, 0, point.z);
+                    this.cityBuilder.placeBuilding(point.x, point.z, building);
                     this.buildings.push(building);
                 }
-            } else if (this.selectedBuildingType === 'skyscraper') {
-                const point = intersects[0].point;
-                const building = this.buildingManager.createBuilding('skyscraper', { floors: this.selectedFloors });
+            } else if (this.selectedBuildingType === BuildingTypes.SKYSCRAPER) {
+                const building = this.buildingManager.createBuilding('skyscraper', this.selectedBuildingStyle, { floors: this.selectedFloors });
                 if (building) {
-                    building.position.set(point.x, 0, point.z);
+                    this.cityBuilder.placeBuilding(point.x, point.z, building);
                     this.buildings.push(building);
                 }
-            } else if (this.selectedBuildingType === 'tree') {
-                const point = intersects[0].point;
-                this.createTree(point);
-            } else if (this.selectedBuildingType === 'road') {
-                const point = intersects[0].point;
+            } else if (this.selectedBuildingType === BuildingTypes.TREE) {
+                const building = this.buildingManager.createBuilding('tree', this.selectedBuildingStyle);
+                if (building) {
+                    this.cityBuilder.placeBuilding(point.x, point.z, building);
+                    this.buildings.push(building);
+                    console.log(`Tree placed at: x=${point.x}, z=${point.z}`); // Debug log
+                } else {
+                    console.error("Failed to create tree."); // Error log
+                }
+            } else if (this.selectedBuildingType === BuildingTypes.ROAD) {
                 this.startPoint = point;
                 this.isDrawing = true;
             }
@@ -655,11 +715,17 @@ export class InputHandler {
 
     onKeyDown(event) {
         if (event.key === 'Delete' || event.key === 'Backspace') {
-            this.isDeleteMode = !this.isDeleteMode;
-            document.getElementById('delete-btn').classList.toggle('active');
-            if (this.isDeleteMode) {
-                this.selectedBuildingType = null;
-            }
+            this.toggleDeleteMode();
         }
+    }
+
+    setupLights() {
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Adjust intensity
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Adjust intensity
+        directionalLight.position.set(50, 50, 0);
+        directionalLight.castShadow = true;
+        this.scene.add(directionalLight);
     }
 } 

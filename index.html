@@ -4,57 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D City Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #2196F3;
+            --primary-hover: #64B5F6;
+            --danger-color: #f44336;
+            --danger-hover: #ef5350;
+            --success-color: #4CAF50;
+            --success-hover: #66BB6A;
+            --background-dark: rgba(0, 0, 0, 0.8);
+            --text-light: #ffffff;
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
-            color: white;
         }
+
         canvas {
             display: block;
-        }
-        #landing-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #1a1a1a;
-            z-index: 1000;
-        }
-        .title {
-            font-size: 42px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .credits {
-            font-size: 16px;
-            margin-bottom: 20px;
-            color: #888;
-        }
-        .start-button {
-            padding: 10px 30px;
-            font-size: 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-align: center;
-            line-height: 1;
-            width: auto;
-            height: auto;
-            display: inline-block;
-        }
-        .start-button:hover {
-            background-color: #45a049;
         }
         #ui {
             position: absolute;
@@ -65,57 +37,90 @@
             color: white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            display: none;
         }
+
+        .ui-title {
+            margin: 0 0 20px 0;
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-light);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         button {
-            margin: 5px;
-            padding: 8px 15px;
+            margin: 0;
+            padding: 12px 20px;
             cursor: pointer;
-            background: #2196F3;
+            background: var(--primary-color);
             border: none;
             color: white;
             border-radius: 4px;
             transition: background 0.3s;
             width: 150px;
             height: 40px;
-            font-size: 12px;
+            font-size: 14px;
             display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
-        #head{
-            text-align: center;
-        }
+
         button:hover {
-            background: #4CAF50;
+            background: #64B5F6;
         }
+
         button.active {
-            background: blueviolet;
-            border: 2px solid white;
+            background: var(--success-color);
+            border: 2px solid var(--text-light);
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
         }
+
         #delete-btn {
-            background: #f44336;
+            background: var(--danger-color);
         }
+
         #delete-btn:hover {
-            background: #4CAF50;
+            background: #ef5350;
         }
+
         #delete-btn.active {
             background: #d32f2f;
-            border: 2px solid white;
+            border: 2px solid var(--text-light);
+            box-shadow: 0 0 15px rgba(211, 47, 47, 0.5);
         }
+
+        .select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         select {
             margin: 5px;
             padding: 8px;
             border-radius: 4px;
             width: 150px;
             height: 40px;
-            font-size: 12px;
+            font-size: 14px;
         }
         #instructions {
-            margin-top: 10px;
+            margin-top: 20px;
             font-size: 12px;
-            color: #ccc;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.5;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
         }
     </style>
 </head>
@@ -127,12 +132,12 @@
     </div>
 
     <div id="ui">
-        <h2 id="head">City Builder</h2>
-        <button id="build-house">BUILD HOUSE</button>
-        <button id="build-skyscraper">BUILD SKYSCRAPER</button>
-        <button id="build-road">BUILD ROAD</button>
-        <button id="build-tree">BUILD TREE</button>
-        <button id="delete-btn">DELETE</button>
+        <h2>City Builder</h2>
+        <button id="build-house">Build House</button>
+        <button id="delete-btn">Delete</button>
+        <button id="build-skyscraper">Build Skyscraper</button>
+        <button id="build-road">Build Road</button>
+        <button id="build-tree">Build Tree</button>
         <select id="floors-select">
             <option value="5">5 Floors</option>
             <option value="6">6 Floors</option>
@@ -141,7 +146,9 @@
             <option value="9">9 Floors</option>
             <option value="10">10 Floors</option>
         </select>
-        <div id="instructions"></div>
+        <div id="instructions">
+            
+        </div>
     </div>
 
     <script type="module" src="./src/main.js"></script>
