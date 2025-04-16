@@ -437,16 +437,18 @@ export class InputHandler {
         if (intersects.length > 0) {
             if (this.selectedBuildingType === 'house') {
                 const point = intersects[0].point;
-                const building = this.buildingManager.createBuilding('house');
+                const building = this.buildingManager.createBuilding('house', 'modern');
                 if (building) {
                     building.position.set(point.x, 0, point.z);
+                    this.scene.add(building);
                     this.buildings.push(building);
                 }
             } else if (this.selectedBuildingType === 'skyscraper') {
                 const point = intersects[0].point;
-                const building = this.buildingManager.createBuilding('skyscraper', { floors: this.selectedFloors });
+                const building = this.buildingManager.createBuilding('skyscraper', 'modern', { floors: this.selectedFloors });
                 if (building) {
                     building.position.set(point.x, 0, point.z);
+                    this.scene.add(building);
                     this.buildings.push(building);
                 }
             } else if (this.selectedBuildingType === 'tree') {
