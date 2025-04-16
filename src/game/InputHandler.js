@@ -417,11 +417,10 @@ export class InputHandler {
         
         return treeGroup;
     }
-
     onMouseDown(event) {
         // Check if the click was on a button
         if (event.target.tagName === 'BUTTON' || event.target.tagName === 'SELECT') {
-            return; // Don't process the click if it was on a button
+            return;
         }
 
         if (this.isDeleteMode) {
@@ -440,12 +439,13 @@ export class InputHandler {
                 
                 // Check if the object is the ground plane
                 if (objectToDelete.userData.isGround) {
-                    return; // Don't delete the ground
+                    return;
                 }
                 
                 if (objectToDelete !== this.scene.children[0]) {
                     this.scene.remove(objectToDelete);
                     
+                    // Remove from buildings or roads arrays
                     const buildingIndex = this.buildings.indexOf(objectToDelete);
                     if (buildingIndex !== -1) {
                         this.buildings.splice(buildingIndex, 1);
@@ -472,35 +472,20 @@ export class InputHandler {
             if (this.selectedBuildingType === BuildingTypes.HOUSE) {
                 const building = this.buildingManager.createBuilding('house', this.selectedBuildingStyle);
                 if (building) {
-                    // Check if we can place the building at this location
-                    if (this.cityBuilder.canPlaceBuilding(point.x, point.z, building)) {
-                        // Only place the building if there's no collision
-                        if (this.cityBuilder.placeBuilding(point.x, point.z, building)) {
-                            this.buildings.push(building);
-                        }
-                    }
+                    this.cityBuilder.placeBuilding(point.x, point.z, building);
+                    this.buildings.push(building);
                 }
             } else if (this.selectedBuildingType === BuildingTypes.SKYSCRAPER) {
                 const building = this.buildingManager.createBuilding('skyscraper', this.selectedBuildingStyle, { floors: this.selectedFloors });
                 if (building) {
-                    // Check if we can place the building at this location
-                    if (this.cityBuilder.canPlaceBuilding(point.x, point.z, building)) {
-                        // Only place the building if there's no collision
-                        if (this.cityBuilder.placeBuilding(point.x, point.z, building)) {
-                            this.buildings.push(building);
-                        }
-                    }
+                    this.cityBuilder.placeBuilding(point.x, point.z, building);
+                    this.buildings.push(building);
                 }
             } else if (this.selectedBuildingType === BuildingTypes.TREE) {
                 const building = this.buildingManager.createBuilding('tree', this.selectedBuildingStyle);
                 if (building) {
-                    // Check if we can place the building at this location
-                    if (this.cityBuilder.canPlaceBuilding(point.x, point.z, building)) {
-                        // Only place the building if there's no collision
-                        if (this.cityBuilder.placeBuilding(point.x, point.z, building)) {
-                            this.buildings.push(building);
-                        }
-                    }
+                    this.cityBuilder.placeBuilding(point.x, point.z, building);
+                    this.buildings.push(building);
                 }
             } else if (this.selectedBuildingType === BuildingTypes.ROAD) {
                 this.startPoint = point;
@@ -508,6 +493,7 @@ export class InputHandler {
             }
         }
     }
+
 
     onMouseMove(event) {
         if (!this.isDrawing || !this.startPoint) return;

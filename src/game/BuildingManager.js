@@ -15,6 +15,7 @@ export class BuildingManager {
                 futuristic: this.createFuturisticSkyscraper
             }
         };
+        this.placedBuildings = []; // Track all placed buildings
     }
 
     createModernHouse() {
@@ -788,21 +789,46 @@ export class BuildingManager {
 
         const building = this.buildingTypes[type][style](options.floors);
         
-        // Add user data for collision detection
+        // Add basic user data
         building.userData = {
             type: type,
             style: style,
             floors: options.floors || 1
         };
 
-        // Calculate and store the building's dimensions
-        const box = new THREE.Box3().setFromObject(building);
-        building.userData.dimensions = {
-            width: box.max.x - box.min.x,
-            height: box.max.y - box.min.y,
-            depth: box.max.z - box.min.z
-        };
-
         return building;
+    }
+
+    placeBuilding(x, z, building) {
+        // Directly position the building without any constraints
+        building.position.set(x, 0, z);
+        
+        // Add to scene and tracking
+        this.scene.add(building);
+        this.placedBuildings.push(building);
+        
+        return true;
+    }
+
+    removeBuilding(x, z) {
+        // Find building at exact position (or nearby)
+        const building = this.placedBuildings.find(b => 
+            Math.abs(b.position.x - x) < 0.1 && 
+            Math.abs(b.position.z - z) < 0.1
+        );
+        
+        if (building) {
+            this.scene.remove(building);
+            this.placedBuildings = this.placedBuildings.filter(b => b !== building);
+            return true;
+        }
+        return false;
+    }
+
+    getBuildingAt(x, z) {
+        return this.placedBuildings.find(b => 
+            Math.abs(b.position.x - x) < 0.1 && 
+            Math.abs(b.position.z - z) < 0.1
+        );
     }
 } 
