@@ -406,23 +406,28 @@ export class InputHandler {
             
             if (intersects.length > 0) {
                 const clickedObject = intersects[0].object;
+                
+                // Check if the clicked object is the ground (green plane)
+                if (clickedObject.geometry instanceof THREE.PlaneGeometry && 
+                    clickedObject.material.color.getHex() === 0x2e8b57) {
+                    return; // Don't delete if it's the ground
+                }
+                
                 let objectToDelete = clickedObject;
                 while (objectToDelete.parent && objectToDelete.parent !== this.scene) {
                     objectToDelete = objectToDelete.parent;
                 }
                 
-                if (objectToDelete !== this.scene.children[0]) {
-                    this.scene.remove(objectToDelete);
-                    
-                    const buildingIndex = this.buildings.indexOf(objectToDelete);
-                    if (buildingIndex !== -1) {
-                        this.buildings.splice(buildingIndex, 1);
-                    }
-                    
-                    const roadIndex = this.roads.indexOf(objectToDelete);
-                    if (roadIndex !== -1) {
-                        this.roads.splice(roadIndex, 1);
-                    }
+                this.scene.remove(objectToDelete);
+                
+                const buildingIndex = this.buildings.indexOf(objectToDelete);
+                if (buildingIndex !== -1) {
+                    this.buildings.splice(buildingIndex, 1);
+                }
+                
+                const roadIndex = this.roads.indexOf(objectToDelete);
+                if (roadIndex !== -1) {
+                    this.roads.splice(roadIndex, 1);
                 }
             }
             return;
