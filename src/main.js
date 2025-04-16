@@ -10,8 +10,13 @@ class Game {
             console.log('Initializing game...');
             this.scene = new THREE.Scene();
             this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // Add fog to the scene
+            const fogColor = 0x87CEEB; // Match sky color
+            this.scene.fog = new THREE.FogExp2(fogColor, 0.015); // Exponential fog
+            
             this.renderer = new THREE.WebGLRenderer({ antialias: true });
-            this.renderer.setClearColor(0x87CEEB); // Sky blue background
+            this.renderer.setClearColor(fogColor); // Sky blue background matching fog
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             this.controls = new OrbitControls(this.camera, this.renderer.domElement);

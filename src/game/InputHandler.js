@@ -397,44 +397,40 @@ export class InputHandler {
             return; // Don't process the click if it was on a button
         }
 
-        if (this.isDeleteMode) {
-            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            this.raycaster.setFromCamera(this.mouse, this.camera);
-            const intersects = this.raycaster.intersectObjects(this.scene.children, true);
-            
-            if (intersects.length > 0) {
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        
+        this.raycaster.setFromCamera(this.mouse, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+        
+        if (intersects.length > 0) {
+            if (this.isDeleteMode) {
                 const clickedObject = intersects[0].object;
+                
+                // Check if the clicked object is the ground
+                if (clickedObject.geometry instanceof THREE.PlaneGeometry) {
+                    return; // Don't delete if it's the ground
+                }
+                
                 let objectToDelete = clickedObject;
                 while (objectToDelete.parent && objectToDelete.parent !== this.scene) {
                     objectToDelete = objectToDelete.parent;
                 }
                 
-                if (objectToDelete !== this.scene.children[0]) {
-                    this.scene.remove(objectToDelete);
-                    
-                    const buildingIndex = this.buildings.indexOf(objectToDelete);
-                    if (buildingIndex !== -1) {
-                        this.buildings.splice(buildingIndex, 1);
-                    }
-                    
-                    const roadIndex = this.roads.indexOf(objectToDelete);
-                    if (roadIndex !== -1) {
-                        this.roads.splice(roadIndex, 1);
-                    }
+                this.scene.remove(objectToDelete);
+                
+                const buildingIndex = this.buildings.indexOf(objectToDelete);
+                if (buildingIndex !== -1) {
+                    this.buildings.splice(buildingIndex, 1);
                 }
+                
+                const roadIndex = this.roads.indexOf(objectToDelete);
+                if (roadIndex !== -1) {
+                    this.roads.splice(roadIndex, 1);
+                }
+                return;
             }
-            return;
-        }
 
-        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        
-        this.raycaster.setFromCamera(this.mouse, this.camera);
-        const intersects = this.raycaster.intersectObjects(this.scene.children);
-        
-        if (intersects.length > 0) {
             if (this.selectedBuildingType === 'house') {
                 const point = intersects[0].point;
                 const building = this.buildingManager.createBuilding('house');

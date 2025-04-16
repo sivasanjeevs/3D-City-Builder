@@ -9,9 +9,52 @@
             margin: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
         }
         canvas {
             display: block;
+        }
+        #landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a1a1a;
+            z-index: 1000;
+        }
+        .title {
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .credits {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #888;
+        }
+        .start-button {
+            padding: 10px 30px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            line-height: 1;
+            width: auto;
+            height: auto;
+            display: inline-block;
+        }
+        .start-button:hover {
+            background-color: #45a049;
         }
         #ui {
             position: absolute;
@@ -22,6 +65,7 @@
             color: white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            display: none;
         }
         button {
             margin: 5px;
@@ -34,11 +78,17 @@
             transition: background 0.3s;
             width: 150px;
             height: 40px;
-            font-size: 14px;
+            font-size: 12px;
             display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #head{
+            text-align: center;
         }
         button:hover {
-            background: #64B5F6;
+            background: #4CAF50;
         }
         button.active {
             background: blueviolet;
@@ -48,7 +98,7 @@
             background: #f44336;
         }
         #delete-btn:hover {
-            background: #ef5350;
+            background: #4CAF50;
         }
         #delete-btn.active {
             background: #d32f2f;
@@ -60,7 +110,7 @@
             border-radius: 4px;
             width: 150px;
             height: 40px;
-            font-size: 14px;
+            font-size: 12px;
         }
         #instructions {
             margin-top: 10px;
@@ -70,13 +120,19 @@
     </style>
 </head>
 <body>
+    <div id="landing-page">
+        <h1 class="title">3D City Platform Building Game</h1>
+        <p class="credits">Made by Pavan Kumar S G and Sivasanjeev S</p>
+        <button class="start-button" onclick="startGame()">START GAME</button>
+    </div>
+
     <div id="ui">
-        <h2>City Builder</h2>
-        <button id="build-house">Build House</button>
-        <button id="delete-btn">Delete</button>
-        <button id="build-skyscraper">Build Skyscraper</button>
-        <button id="build-road">Build Road</button>
-        <button id="build-tree">Build Tree</button>
+        <h2 id="head">City Builder</h2>
+        <button id="build-house">BUILD HOUSE</button>
+        <button id="build-skyscraper">BUILD SKYSCRAPER</button>
+        <button id="build-road">BUILD ROAD</button>
+        <button id="build-tree">BUILD TREE</button>
+        <button id="delete-btn">DELETE</button>
         <select id="floors-select">
             <option value="5">5 Floors</option>
             <option value="6">6 Floors</option>
@@ -85,10 +141,15 @@
             <option value="9">9 Floors</option>
             <option value="10">10 Floors</option>
         </select>
-        <div id="instructions">
-            
-        </div>
+        <div id="instructions"></div>
     </div>
+
     <script type="module" src="./src/main.js"></script>
+    <script>
+        function startGame() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+        }
+    </script>
 </body>
 </html> 
