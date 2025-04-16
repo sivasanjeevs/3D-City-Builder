@@ -1,16 +1,33 @@
 import * as THREE from 'three';
+import { CityBuilder } from './CityBuilder';
+
+// Building type definitions
+const BuildingTypes = {
+    HOUSE: 'house',
+    SKYSCRAPER: 'skyscraper',
+    ROAD: 'road',
+    TREE: 'tree'
+};
+
+const BuildingStyles = {
+    MODERN: 'modern',
+    CLASSIC: 'classic',
+    FUTURISTIC: 'futuristic'
+};
 
 export class InputHandler {
     constructor(camera, scene, buildingManager) {
         this.camera = camera;
         this.scene = scene;
         this.buildingManager = buildingManager;
+        this.cityBuilder = new CityBuilder(scene);
         this.isDrawing = false;
         this.startPoint = null;
         this.currentRoad = null;
         this.roads = [];
         this.buildings = [];
-        this.selectedBuildingType = 'house';
+        this.selectedBuildingType = BuildingTypes.HOUSE;
+        this.selectedBuildingStyle = BuildingStyles.MODERN;
         this.selectedFloors = 5;
         this.isDeleteMode = false;
         this.raycaster = new THREE.Raycaster();
@@ -24,61 +41,71 @@ export class InputHandler {
         window.addEventListener('mouseup', () => this.onMouseUp());
         window.addEventListener('keydown', (event) => this.onKeyDown(event));
 
+        // Building type selection
         document.getElementById('build-house').addEventListener('click', () => {
-            this.selectedBuildingType = 'house';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.add('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.remove('active');
+            this.setBuildingType(BuildingTypes.HOUSE);
         });
         
         document.getElementById('build-road').addEventListener('click', () => {
-            this.selectedBuildingType = 'road';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.add('active');
-            document.getElementById('build-tree').classList.remove('active');
+            this.setBuildingType(BuildingTypes.ROAD);
         });
 
         document.getElementById('build-skyscraper').addEventListener('click', () => {
-            this.selectedBuildingType = 'skyscraper';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.add('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.remove('active');
+            this.setBuildingType(BuildingTypes.SKYSCRAPER);
         });
 
         document.getElementById('build-tree').addEventListener('click', () => {
-            this.selectedBuildingType = 'tree';
-            this.isDeleteMode = false;
-            document.getElementById('delete-btn').classList.remove('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.add('active');
+            this.setBuildingType(BuildingTypes.TREE);
         });
 
         document.getElementById('delete-btn').addEventListener('click', () => {
-            this.isDeleteMode = !this.isDeleteMode;
-            document.getElementById('delete-btn').classList.toggle('active');
-            document.getElementById('build-house').classList.remove('active');
-            document.getElementById('build-skyscraper').classList.remove('active');
-            document.getElementById('build-road').classList.remove('active');
-            document.getElementById('build-tree').classList.remove('active');
-            if (this.isDeleteMode) {
-                this.selectedBuildingType = null;
-            }
+            this.toggleDeleteMode();
         });
 
         document.getElementById('floors-select').addEventListener('change', (event) => {
             this.selectedFloors = parseInt(event.target.value);
         });
+
+        // Building style selection
+        document.getElementById('building-style').addEventListener('change', (event) => {
+            this.setBuildingStyle(event.target.value);
+        });
+    }
+
+    setBuildingType(type) {
+        this.selectedBuildingType = type;
+        this.isDeleteMode = false;
+        
+        // Update UI
+        document.getElementById('delete-btn').classList.remove('active');
+        document.getElementById('build-house').classList.remove('active');
+        document.getElementById('build-skyscraper').classList.remove('active');
+        document.getElementById('build-road').classList.remove('active');
+        document.getElementById('build-tree').classList.remove('active');
+        
+        // Activate the selected button
+        document.getElementById(`build-${type}`).classList.add('active');
+    }
+
+    setBuildingStyle(style) {
+        if (Object.values(BuildingStyles).includes(style)) {
+            this.selectedBuildingStyle = style;
+        }
+    }
+
+    toggleDeleteMode() {
+        this.isDeleteMode = !this.isDeleteMode;
+        document.getElementById('delete-btn').classList.toggle('active');
+        
+        // Deactivate all building type buttons
+        document.getElementById('build-house').classList.remove('active');
+        document.getElementById('build-skyscraper').classList.remove('active');
+        document.getElementById('build-road').classList.remove('active');
+        document.getElementById('build-tree').classList.remove('active');
+        
+        if (this.isDeleteMode) {
+            this.selectedBuildingType = null;
+        }
     }
 
     createRoadMarkings(road) {
@@ -411,6 +438,11 @@ export class InputHandler {
                     objectToDelete = objectToDelete.parent;
                 }
                 
+                // Check if the object is the ground plane
+                if (objectToDelete.userData.isGround) {
+                    return; // Don't delete the ground
+                }
+                
                 if (objectToDelete !== this.scene.children[0]) {
                     this.scene.remove(objectToDelete);
                     
@@ -435,25 +467,42 @@ export class InputHandler {
         const intersects = this.raycaster.intersectObjects(this.scene.children);
         
         if (intersects.length > 0) {
-            if (this.selectedBuildingType === 'house') {
-                const point = intersects[0].point;
-                const building = this.buildingManager.createBuilding('house');
+            const point = intersects[0].point;
+            
+            if (this.selectedBuildingType === BuildingTypes.HOUSE) {
+                const building = this.buildingManager.createBuilding('house', this.selectedBuildingStyle);
                 if (building) {
-                    building.position.set(point.x, 0, point.z);
-                    this.buildings.push(building);
+                    // Check if we can place the building at this location
+                    if (this.cityBuilder.canPlaceBuilding(point.x, point.z, building)) {
+                        // Only place the building if there's no collision
+                        if (this.cityBuilder.placeBuilding(point.x, point.z, building)) {
+                            this.buildings.push(building);
+                        }
+                    }
                 }
-            } else if (this.selectedBuildingType === 'skyscraper') {
-                const point = intersects[0].point;
-                const building = this.buildingManager.createBuilding('skyscraper', { floors: this.selectedFloors });
+            } else if (this.selectedBuildingType === BuildingTypes.SKYSCRAPER) {
+                const building = this.buildingManager.createBuilding('skyscraper', this.selectedBuildingStyle, { floors: this.selectedFloors });
                 if (building) {
-                    building.position.set(point.x, 0, point.z);
-                    this.buildings.push(building);
+                    // Check if we can place the building at this location
+                    if (this.cityBuilder.canPlaceBuilding(point.x, point.z, building)) {
+                        // Only place the building if there's no collision
+                        if (this.cityBuilder.placeBuilding(point.x, point.z, building)) {
+                            this.buildings.push(building);
+                        }
+                    }
                 }
-            } else if (this.selectedBuildingType === 'tree') {
-                const point = intersects[0].point;
-                this.createTree(point);
-            } else if (this.selectedBuildingType === 'road') {
-                const point = intersects[0].point;
+            } else if (this.selectedBuildingType === BuildingTypes.TREE) {
+                const building = this.buildingManager.createBuilding('tree', this.selectedBuildingStyle);
+                if (building) {
+                    // Check if we can place the building at this location
+                    if (this.cityBuilder.canPlaceBuilding(point.x, point.z, building)) {
+                        // Only place the building if there's no collision
+                        if (this.cityBuilder.placeBuilding(point.x, point.z, building)) {
+                            this.buildings.push(building);
+                        }
+                    }
+                }
+            } else if (this.selectedBuildingType === BuildingTypes.ROAD) {
                 this.startPoint = point;
                 this.isDrawing = true;
             }
@@ -659,11 +708,7 @@ export class InputHandler {
 
     onKeyDown(event) {
         if (event.key === 'Delete' || event.key === 'Backspace') {
-            this.isDeleteMode = !this.isDeleteMode;
-            document.getElementById('delete-btn').classList.toggle('active');
-            if (this.isDeleteMode) {
-                this.selectedBuildingType = null;
-            }
+            this.toggleDeleteMode();
         }
     }
 } 

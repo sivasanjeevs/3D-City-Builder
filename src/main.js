@@ -4,10 +4,103 @@ import { CityBuilder } from './game/CityBuilder';
 import { BuildingManager } from './game/BuildingManager';
 import { InputHandler } from './game/InputHandler';
 
+class WelcomeScreen {
+    
+    constructor() {
+        this.element = document.createElement('div');
+        this.element.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        `;
+
+        const title = document.createElement('h1');
+        title.textContent = 'Welcome to 3D City Platform Building Game';
+        title.style.cssText = `
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        `;
+
+        const startButton = document.createElement('button');
+        startButton.textContent = 'Start Game';
+        startButton.style.cssText = `
+            padding: 15px 30px;
+            width: 200px;
+            height: 60px;
+            font-size: 1.5em;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        `;
+        startButton.onmouseover = () => startButton.style.background = '#45a049';
+        startButton.onmouseout = () => startButton.style.background = '#4CAF50';
+
+        this.element.appendChild(title);
+        this.element.appendChild(startButton);
+        document.body.appendChild(this.element);
+        const subtitle = document.createElement('p');
+        subtitle.textContent = 'Made by Pavan Kumar S G (22pt22) and Sivasanjeev S (22pt32)';
+        subtitle.style.cssText = `
+            font-size: 1.2em;
+            margin-top: 20px;
+            opacity: 0.8;
+            text-align: center;
+        `;
+        this.element.appendChild(subtitle);
+        this.startButton = startButton;
+    }
+
+    show() {
+        this.element.style.display = 'flex';
+        this.element.style.opacity = '1';
+    }
+
+    hide() {
+        this.element.style.opacity = '0';
+        setTimeout(() => {
+            this.element.style.display = 'none';
+        }, 500);
+    }
+}
+
 class Game {
     constructor() {
         try {
             console.log('Initializing game...');
+            this.welcomeScreen = new WelcomeScreen();
+            this.welcomeScreen.show();
+            
+            // Initialize game state
+            this.isGameStarted = false;
+            
+            // Set up event listener for start button
+            this.welcomeScreen.startButton.onclick = () => {
+                this.welcomeScreen.hide();
+                this.initializeGame();
+                this.startGame();
+            };
+        } catch (error) {
+            console.error('Error initializing game:', error);
+        }
+    }
+
+    initializeGame() {
+        try {
             this.scene = new THREE.Scene();
             this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -26,8 +119,7 @@ class Game {
             this.buildingManager = new BuildingManager(this.scene);
             this.inputHandler = new InputHandler(this.camera, this.scene, this.buildingManager);
             
-            console.log('Starting animation loop...');
-            this.animate();
+            this.isGameStarted = true;
         } catch (error) {
             console.error('Error initializing game:', error);
         }
@@ -89,6 +181,7 @@ class Game {
             const ground = new THREE.Mesh(groundGeometry, groundMaterial);
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
+            ground.userData.isGround = true; // Mark this as the ground plane
             this.scene.add(ground);
             console.log('Ground created');
         } catch (error) {
@@ -114,6 +207,11 @@ class Game {
         } catch (error) {
             console.error('Error in animate:', error);
         }
+    }
+
+    startGame() {
+        console.log('Starting animation loop...');
+        this.animate();
     }
 }
 
