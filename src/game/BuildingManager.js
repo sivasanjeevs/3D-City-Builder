@@ -53,6 +53,32 @@ export class BuildingManager {
         roof.receiveShadow = true;
         house.add(roof);
 
+        // Add modern chimney
+        const chimneyGeometry = new THREE.BoxGeometry(0.8, 1.5, 0.8);
+        const chimneyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x424242,
+            metalness: 0.4,
+            roughness: 0.8
+        });
+        const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+        chimney.position.set(2.5, 5, 2.5); // Position on the corner of the roof
+        chimney.castShadow = true;
+        chimney.receiveShadow = true;
+        house.add(chimney);
+
+        // Chimney cap
+        const capGeometry = new THREE.BoxGeometry(1, 0.2, 1);
+        const capMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2C3E50,
+            metalness: 0.5,
+            roughness: 0.7
+        });
+        const cap = new THREE.Mesh(capGeometry, capMaterial);
+        cap.position.set(2.5, 5.85, 2.5);
+        cap.castShadow = true;
+        cap.receiveShadow = true;
+        house.add(cap);
+
         // Large modern windows
         const createModernWindow = (x, y, z) => {
             const windowGroup = new THREE.Group();
@@ -129,6 +155,32 @@ export class BuildingManager {
         roof.castShadow = true;
         roof.receiveShadow = true;
         house.add(roof);
+
+        // Add classic brick chimney
+        const chimneyGeometry = new THREE.BoxGeometry(1, 2.5, 1);
+        const chimneyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8B4513,
+            metalness: 0.1,
+            roughness: 0.95
+        });
+        const chimney = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+        chimney.position.set(2, 5, 2); // Position on the side of the roof
+        chimney.castShadow = true;
+        chimney.receiveShadow = true;
+        house.add(chimney);
+
+        // Chimney cap with brick detail
+        const capGeometry = new THREE.BoxGeometry(1.2, 0.3, 1.2);
+        const capMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8B0000,
+            metalness: 0.1,
+            roughness: 0.9
+        });
+        const cap = new THREE.Mesh(capGeometry, capMaterial);
+        cap.position.set(2, 6.4, 2);
+        cap.castShadow = true;
+        cap.receiveShadow = true;
+        house.add(cap);
 
         // Classic windows
         const createClassicWindow = (x, y, z) => {
